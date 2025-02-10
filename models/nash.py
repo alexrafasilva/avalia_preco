@@ -1,26 +1,28 @@
 import numpy as np
 from scipy.optimize import minimize_scalar
+from .demand import calcular_lucro
 
-def calcular_demanda(preco_proprio, preco_medio_concorrentes, demanda_base, elasticidade):
-    """
-    Calcula a demanda com base no preço próprio e preço médio dos concorrentes.
-    """
-    variacao = elasticidade * ((preco_proprio - preco_medio_concorrentes) / preco_medio_concorrentes)
-    return max(demanda_base * (1 + variacao), 0)
-
-def encontrar_equilibrio_nash(precos_iniciais, custos_marginais, elasticidade, demanda_base, iteracoes=100):
+def encontrar_equilibrio_nash(precos_iniciais: list, custos_marginais: list, elasticidade: float, demanda_base: int, iteracoes: int = 100) -> list:
     """
     Encontra o equilíbrio de Nash para múltiplos concorrentes.
+    
+    Args:
+        precos_iniciais (list): Preços iniciais dos concorrentes
+        custos_marginais (list): Custos marginais dos concorrentes
+        elasticidade (float): Elasticidade-preço da demanda
+        demanda_base (int): Demanda base
+        iteracoes (int): Número de iterações para convergência
+        
+    Returns:
+        list: Preços de equilíbrio de Nash
     """
     precos = np.array(precos_iniciais)
     n_jogadores = len(precos)
     
     for _ in range(iteracoes):
         for i in range(n_jogadores):
-            funcao = lambda p: -((p - custos_marginais[i]) * calcular_demanda(
-                p, np.mean(np.delete(precos, i)), demanda_base, elasticidade))
-            
-            resultado = minimize_scalar(funcao, bounds=(70000, 150000), method='bounded')
+            funcao = lambda p: -calcular_lucro(p, custos_marginais[i], np.mean(np.delete(precos, i)), demanda_base, elasticidade)
+            resultado = minimize_scalar(funcao, bounds=(50000, 200000), method='bounded')
             precos[i] = resultado.x
     
-    return precos
+    return precos.tolist()

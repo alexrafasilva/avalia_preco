@@ -2,16 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd 
 import numpy as np
 def plotar_grafico(precos: list, lucros: list) -> plt.Figure:
-    """
-    Gera um gráfico profissional de preço vs lucro.
     
-    Args:
-        precos (list): Lista de preços testados
-        lucros (list): Lista de lucros correspondentes
-        
-    Returns:
-        plt.Figure: Objeto de figura do matplotlib
-    """
     fig, ax = plt.subplots(figsize=(10, 6))
     
     ax.plot(precos, lucros, 

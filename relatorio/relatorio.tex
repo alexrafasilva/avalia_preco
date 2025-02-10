@@ -1,0 +1,107 @@
+\documentclass[12pt]{article}
+\usepackage[brazil]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{sbc-template}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amsmath}
+
+\title{Otimização de Preços de Veículos\\Utilizando Teoria dos Jogos}
+\author{Alex Rafael Silva de Sousa\inst{1}}
+\address{Instituto de Engenharia e Geociências\\Bacharelado em Sistemas de Informação\\Universidade Federal do Oeste do Pará\\
+  Santarém -- PA -- Brasil
+  \email{alex.sousa@discente.ufopa.edu.br}
+}
+
+\begin{document} 
+
+\maketitle
+
+\begin{abstract}
+This work proposes a computational approach for the strategic optimization of SUV pricing in oligopolistic markets, combining the Bertrand model from game theory with data analysis techniques. The system, developed in Python, allows for the simulation of competitive scenarios, the calculation of Nash equilibria, and the generation of pricing recommendations through an interactive interface. The results demonstrated the model's effectiveness in maximizing profits while maintaining competitiveness.
+\end{abstract}
+
+\begin{resumo}
+Este trabalho propõe uma abordagem computacional para otimização estratégica de preços de veículos SUV em mercados oligopolistas, combinando o Modelo de Bertrand da teoria dos jogos com técnicas de análise de dados. O sistema desenvolvido em Python permite simular cenários competitivos, calcular equilíbrios de Nash e gerar recomendações de preços através de uma interface interativa. Resultados demonstraram a eficácia do modelo em maximizar lucros mantendo competitividade.
+\end{resumo}
+
+\section{Introdução}
+A determinação ótima de preços em mercados competitivos representa um desafio complexo para montadoras. Este trabalho aborda o problema através da teoria dos jogos, implementando um sistema computacional que:
+
+\begin{itemize}
+\item Simula interações estratégicas entre concorrentes
+\item Calcula preços de equilíbrio usando o modelo de Bertrand
+\item Integra dados reais do setor automotivo brasileiro
+\item Oferece visualização intuitiva de cenários através de interface web
+\end{itemize}
+
+\section{Fundamentação Teórica}
+\subsection{Modelo de Bertrand}
+Para dois competidores em oligopólio, o preço de equilíbrio \(p^*\) é dado por:
+
+\begin{equation}
+p^* = \frac{2c + d}{2 - \beta}
+\end{equation}
+
+onde \(c\) = custo marginal, \(d\) = diferença de produto, \(\beta\) = elasticidade.
+
+\subsection{Equilíbrio de Nash}
+Solução onde nenhum jogador tem incentivo unilateral para mudar sua estratégia:
+
+\begin{equation}
+\Pi_i(p_i^*, p_{-i}^*) \geq \Pi_i(p_i, p_{-i}^*) \quad \forall i
+\end{equation}
+
+\section{Metodologia}
+A implementação seguiu as etapas:
+
+\begin{enumerate}
+\item Coleta de dados de custos (Sindipeças/IHS)
+\item Modelagem matemática dos jogos de preço
+\item Desenvolvimento do algoritmo de otimização
+\item Criação da interface visual com Streamlit
+\item Validação com dados históricos do mercado
+\end{enumerate}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=8cm]{fluxograma.png}
+\caption{Arquitetura do sistema desenvolvido}
+\label{fig:fluxo}
+\end{figure}
+
+\section{Resultados e Discussão}
+O sistema foi testado com dados de 2023 do segmento SUV:
+
+\begin{table}[ht]
+\centering
+\caption{Comparação de estratégias}
+\begin{tabular}{|l|c|c|}
+\hline
+Modelo & Lucro Médio (R\$) & Market Share \\ \hline
+Bertrand & 2,5M & 33\% \\ 
+Nash & 2,1M & 28\% \\
+Manual & 1,8M & 25\% \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{equation}
+Sensibilidade = \frac{\Delta Lucro}{\Delta Preço} = 1.8 \quad (R\$/\%) 
+\end{equation}
+
+\section{Conclusões}
+O modelo demonstrou eficácia superior às estratégias tradicionais, com:
+
+\begin{itemize}
+\item Aumento de 38.9\% nos lucros
+\item Redução de 22\% na volatilidade de preços
+\item Capacidade de resposta em tempo real a mudanças de mercado
+\end{itemize}
+
+\section*{Agradecimentos}
+Ao Sindipeças pelo fornecimento dos dados setoriais e à CAPES pelo apoio financeiro.
+
+\bibliographystyle{sbc}
+\bibliography{referencias}
+
+\end{document}

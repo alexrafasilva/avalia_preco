@@ -1,4 +1,3 @@
 # Parâmetros globais
-ELASTICIDADE = -1.2
-DEMANDA_BASE = 5000
-CUSTO_MARGINAL_PADRAO = 80000
+DEMANDA_BASE = 5000           # Unidades/ano
+ELASTICIDADE_PADRAO = -1.5    # Elasticidade média

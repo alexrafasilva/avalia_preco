@@ -1,58 +1,70 @@
 import sys
 import os
 
-# Adiciona o diretório raiz do projeto ao Python PATH
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))  # Corrigido!
+# Adiciona o diretório raiz ao PYTHONPATH
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import streamlit as st
 import numpy as np
-from models.bertrand import otimizar_preco_bertrand  # Agora funcionará
-from models.demand import calcular_lucro
-from src.utils import plotar_grafico
-from src.config import *
+import pandas as pd
+import sqlite3
+from models.bertrand import otimizar_preco
+from src.database import criar_tabela, inserir_preco, obter_preco_medio
+from src.config import DEMANDA_BASE, ELASTICIDADE_PADRAO
 
-# Configuração da página
-st.set_page_config(page_title="Otimizador de Preços", layout="wide")
-st.title("📈 Otimização de Preços para SUVs - Teoria dos Jogos")
+# Configuração inicial
+criar_tabela()
+st.set_page_config(page_title="Otimizador de Preços SUV", layout="wide")
+st.title("🚙 Otimizador de Preços - Teoria dos Jogos")
 
-# Sidebar - Parâmetros
+# Sidebar - Controle de dados
 with st.sidebar:
-    st.header("⚙️ Parâmetros de Entrada")
+    st.header("📊 Gestão de Dados")
     
-    # Modo de custo automático (58%) vs manual
-    usar_custo_auto = st.toggle("Usar custo automático (58% do preço médio)", True)
+    # Modo de entrada
+    modo_dados = st.radio("Fonte de dados:", ["Banco de Dados", "Manual"])
     
-    if usar_custo_auto:
-        preco_medio = st.number_input("Preço médio de mercado (R$)", value=100000)
-        custo_marginal = 0.58 * preco_medio
-        st.info(f"Custo marginal calculado: R${custo_marginal:,.2f}")
+    if modo_dados == "Manual":
+        n_concorrentes = st.slider("Número de concorrentes", 1, 5, 3)
+        precos_concorrentes = [st.number_input(f"Preço concorrente {i+1} (R$)", value=100000) 
+                              for i in range(n_concorrentes)]
+        preco_medio = np.mean(precos_concorrentes)
     else:
-        custo_marginal = st.number_input("Custo Marginal (R$)", value=CUSTO_MARGINAL_PADRAO)
-    
-    n_concorrentes = st.slider("Número de concorrentes", 1, 5, 3)
-    precos_concorrentes = [st.number_input(f"Preço Concorrente {i+1} (R$)", value=100000) for i in range(n_concorrentes)]
-    elasticidade = st.slider("Elasticidade-Preço", -2.0, 0.0, ELASTICIDADE, step=0.1)
+        preco_medio = obter_preco_medio()
+        st.info(f"Preço médio atual: R${preco_medio:,.2f}")
 
-# Cálculos
-preco_medio_concorrentes = np.mean(precos_concorrentes)
+# Parâmetros principais
+with st.sidebar:
+    st.header("⚙️ Parâmetros")
+    custo_marginal = st.number_input("Custo marginal (R$)", value=60000)
+    elasticidade = st.slider("Elasticidade-preço", -2.0, 0.0, ELASTICIDADE_PADRAO, 0.1)
 
 # Seção principal
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📊 Otimização de Preço")
-    if st.button("Calcular Preço Ótimo", type="primary"):
-        preco_otimo, lucro = otimizar_preco_bertrand(
-            custo_marginal, 
-            preco_medio_concorrentes,
-            DEMANDA_BASE,
-            elasticidade
-        )
-        st.success(f"**Preço Ótimo:** R${preco_otimo:,.2f}")
-        st.metric("Lucro Anual Estimado", f"R${lucro:,.2f}")
+    st.subheader("💡 Otimização de Preço")
+    if st.button("Calcular preço ótimo", type="primary"):
+        preco_otimo, lucro = otimizar_preco(custo_marginal, preco_medio, DEMANDA_BASE, elasticidade)
+        st.success(f"**Preço recomendado:** R${preco_otimo:,.2f}")
+        st.metric("Lucro projetado", f"R${lucro:,.2f}")
 
 with col2:
-    st.subheader("🔍 Análise de Sensibilidade")
-    precos_teste = np.linspace(70000, 150000, 50)
-    lucros = [calcular_lucro(p, custo_marginal, preco_medio_concorrentes, DEMANDA_BASE, elasticidade) for p in precos_teste]
-    st.pyplot(plotar_grafico(precos_teste, lucros))
+    st.subheader("📈 Análise Competitiva")
+    if modo_dados == "Banco de Dados":
+        conn = sqlite3.connect('database/precos.db')
+        dados = pd.read_sql("SELECT marca, modelo, preco FROM precos", conn)
+        st.dataframe(dados.style.format({"preco": "R${:,.2f}"}))
+    else:
+        st.write("Preços inseridos manualmente:")
+        for i, preco in enumerate(precos_concorrentes):
+            st.write(f"- Concorrente {i+1}: R${preco:,.2f}")
+
+# Administração do banco de dados
+with st.expander("🔧 Adicionar dados ao banco"):
+    marca = st.text_input("Marca")
+    modelo = st.text_input("Modelo")
+    preco = st.number_input("Preço (R$)", min_value=0)
+    if st.button("Salvar registro"):
+        inserir_preco(marca, modelo, preco)
+        st.success("Dados salvos!")
